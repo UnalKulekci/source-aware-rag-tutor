@@ -1,14 +1,29 @@
-# Python-generated files
+# Python
+# Compiled Python files
 __pycache__/
 *.py[oc]
+
+# Distribution / Build artifacts
 build/
 dist/
 wheels/
-*.egg-info
+*.egg-info/
 
 # Virtual environments
-.venv
+.venv/
 venv/
 
+# IDE settings
+.vscode/
+.idea/
+
+# Environment variables
 .env
-/data
+
+# Data and generated files
+/data/
+data/raw/
+*.pdf
+
+# Dependency lock files
+.uv.lock
