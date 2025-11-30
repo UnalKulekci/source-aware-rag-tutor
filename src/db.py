@@ -5,6 +5,9 @@ https://www.psycopg.org/psycopg3/docs/basic/usage.html
 https://www.crunchydata.com/blog/hnsw-indexes-with-postgres-and-pgvector
 https://github.com/pgvector/pgvector?tab=readme-ov-file#installation ** Vector Index Settings
 
+
+https://docs.python.org/3/howto/logging.html -> Logging
+
 """
 
 import os
@@ -20,13 +23,20 @@ db_user = os.getenv("POSTGRES_USER")
 db_password = os.getenv("POSTGRES_PASSWORD")
 db_name = os.getenv("POSTGRES_DB")
 db_host = os.getenv("POSTGRES_HOST", "localhost")
+db_port = os.getenv("POSTGRES_PORT", "5432")
 
 # GPT**
 if not all([db_user, db_password, db_name]):
     raise ValueError("Database info is missing. Please check your .env file.")
 
 # Connection settings
-DB_PARAMS = f"dbname={db_name} user={db_user} password={db_password} host={db_host}"
+DB_PARAMS = {
+    "dbname": db_name,
+    "user": db_user,
+    "password": db_password,
+    "host": db_host,
+    "port": db_port
+}
 
 # Vector index settings
 # Supported index types: "hnsw", "ivfflat"
@@ -162,7 +172,6 @@ def insert_chunks(doc_id: int, chunks):
         conn.rollback()
     finally:
         conn.close()
-
 
 # https://stackoverflow.com/questions/2254999/similarity-function-in-postgres-with-pg-trgm
 def search_similar_chunks(query_embedding: List[float], top_k: int = 5, category_filter: Optional[str] = None) -> List[Dict[str, Any]]:
