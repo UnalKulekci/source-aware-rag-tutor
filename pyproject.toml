@@ -12,6 +12,7 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "openai>=1.0.0",
     "psycopg[binary]>=3.1.0",
+    "colorlog>=6.10.1",
 ]
 
 [tool.uv]
