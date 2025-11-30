@@ -1,15 +1,21 @@
 [project]
 name = "source-aware-rag-tutor"
 version = "0.1.0"
-description = "Add your description here"
+description = "Source-Aware RAG Tutor for Computer Science Students"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "jupyterlab>=4.0.0",
     "ipykernel>=6.0.0",
-    "llama-index>=0.14.8",
-    "llama-index-llms-openai>=0.6.9",
+    "llama-index>=0.10.0",
+    "llama-index-llms-openai>=0.1.0",
     "python-dotenv>=1.0.0",
-    "openai>=2.8.1",
-    "psycopg>=3.2.13",
+    "openai>=1.0.0",
+    "psycopg[binary]>=3.1.0",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "ruff>=0.1.0",
+    "pytest>=7.0.0",
 ]

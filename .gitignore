@@ -1,29 +1,31 @@
 # Python
-# Compiled Python files
 __pycache__/
-*.py[oc]
+*.py[cod]
+*.so
 
-# Distribution / Build artifacts
-build/
-dist/
-wheels/
-*.egg-info/
-
-# Virtual environments
+# Environments & Dependency Management
+.env
 .venv/
 venv/
+ENV/
+.uv.lock
 
-# IDE settings
+# IDE & Editor
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# Environment variables
-.env
+# Data (Exclude raw data and vector stores)
+data/
+!data/.gitkeep
+!data/raw/.gitkeep
 
-# Data and generated files
-/data/
-data/raw/
-*.pdf
+# Logs & Testing
+*.log
+.pytest_cache/
+.coverage
+htmlcov/
 
-# Dependency lock files
-.uv.lock
+# Jupyter Notebooks
+.ipynb_checkpoints/
