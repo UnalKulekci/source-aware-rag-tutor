@@ -1,6 +1,7 @@
 import os
 import re
 import logging
+import colorlog
 from typing import List
 from dotenv import load_dotenv
 from llama_index.core import SimpleDirectoryReader, Document
@@ -15,13 +16,24 @@ from db import init_db, insert_document, insert_chunks
 
 #https://docs.python.org/3/howto/logging.html
 #https://www.geeksforgeeks.org/python/how-to-log-queries-in-postgresql-using-python/
-# Configure Logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.StreamHandler()] # GPT
-)
-logger = logging.getLogger(__name__)
+# Configure Logging with Colors
+handler = colorlog.StreamHandler()
+handler.setFormatter(colorlog.ColoredFormatter(
+    '%(log_color)s%(asctime)s [%(name)s] [%(levelname)s] %(message)s',
+    log_colors={
+        'DEBUG': 'cyan',
+        'INFO': 'green',
+        'WARNING': 'yellow',
+        'ERROR': 'red',
+        'CRITICAL': 'red,bg_white',
+    }
+))
+
+logger = colorlog.getLogger(__name__)
+if not logger.handlers:
+    logger.addHandler(handler)
+    logger.setLevel(os.getenv("LOG_LEVEL", "INFO").upper())
+    logger.propagate = False  # Prevent duplicate logs by stopping propagation to root logger
 
 load_dotenv()
 
@@ -84,6 +96,8 @@ def process_documents_to_chunks(documents: List[Document], chunk_size: int = CHU
     nodes = splitter.get_nodes_from_documents(cleaned_docs)
     
     logger.info(f"Created {len(nodes)} chunks.")
+    if nodes:
+        logger.debug(f"Chunk Sample (first 100 chars): {nodes[0].text[:100]}...")
     
     return nodes
 
@@ -101,7 +115,10 @@ def generate_embeddings(texts: List[str], model: str = EMBEDDING_MODEL) -> List[
             model=model,
             input=valid_texts
         )
-        return [data.embedding for data in response.data]
+        embeddings = [data.embedding for data in response.data]
+        if embeddings:
+            logger.debug(f"Embedding Sample (first 5 dims): {embeddings[0][:5]}...")
+        return embeddings
     except Exception as e:
         logger.error(f"Error generating embeddings: {e}")
         return []

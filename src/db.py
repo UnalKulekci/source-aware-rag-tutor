@@ -14,8 +14,29 @@ import os
 import psycopg
 from psycopg.rows import dict_row
 import json
+import logging
+import colorlog
 from dotenv import load_dotenv
 from typing import List, Dict, Any, Optional
+
+# Configure Logging with Colors (For src.db)
+handler = colorlog.StreamHandler()
+handler.setFormatter(colorlog.ColoredFormatter(
+    '%(log_color)s%(asctime)s [%(name)s] [%(levelname)s] %(message)s',
+    log_colors={
+        'DEBUG': 'cyan',
+        'INFO': 'green',
+        'WARNING': 'yellow',
+        'ERROR': 'red',
+        'CRITICAL': 'red,bg_white',
+    }
+))
+
+logger = colorlog.getLogger(__name__)
+if not logger.handlers:
+    logger.addHandler(handler)
+    logger.setLevel(os.getenv("LOG_LEVEL", "INFO").upper())
+    logger.propagate = False  # Prevent duplicate logs
 
 load_dotenv()
 
@@ -27,7 +48,8 @@ db_port = os.getenv("POSTGRES_PORT", "5432")
 
 # GPT**
 if not all([db_user, db_password, db_name]):
-    raise ValueError("Database info is missing. Please check your .env file.")
+    logger.error("Database info is missing. Please check your .env file.")
+    raise ValueError("Database info is missing.")
 
 # Connection settings
 DB_PARAMS = {
@@ -53,7 +75,7 @@ VECTOR_OPERATOR_CLASS = "vector_cosine_ops"
 
 # https://www.psycopg.org/psycopg3/docs/basic/usage.html
 def get_db_connection():
-    return psycopg.connect(DB_PARAMS, row_factory=dict_row)
+    return psycopg.connect(**DB_PARAMS, row_factory=dict_row)
 
 def init_db():
     """Creates database tables and enables pgvector."""
@@ -98,9 +120,9 @@ def init_db():
             cur.execute("CREATE INDEX IF NOT EXISTS idx_document_id ON document_chunks(document_id);")
 
             conn.commit()
-            print("Database initialized successfully.")
+            logger.info("Database initialized successfully.")
     except Exception as e:
-        print("Error while creating database:", e)
+        logger.error(f"Error while creating database: {e}")
         conn.rollback()
     finally:
         conn.close()
@@ -139,7 +161,7 @@ def insert_document(file_path: str, filename: str, total_pages: int):
 
             conn.commit()
     except Exception as e:
-        print("Error inserting document:", e)
+        logger.error(f"Error inserting document: {e}")
         conn.rollback()
     finally:
         conn.close()
@@ -166,9 +188,9 @@ def insert_chunks(doc_id: int, chunks):
                 ))
 
             conn.commit()
-            print(f"{len(chunks)} chunks inserted.")
+            logger.info(f"{len(chunks)} chunks inserted.")
     except Exception as e:
-        print("Error inserting chunks:", e)
+        logger.error(f"Error inserting chunks: {e}")
         conn.rollback()
     finally:
         conn.close()
@@ -218,7 +240,7 @@ def search_similar_chunks(query_embedding: List[float], top_k: int = 5, category
             results = cur.fetchall()
             
     except Exception as e:
-        print(f"Error searching similar chunks: {e}")
+        logger.error(f"Error searching similar chunks: {e}")
     finally:
         conn.close()
         
